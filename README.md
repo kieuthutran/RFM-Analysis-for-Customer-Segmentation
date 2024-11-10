@@ -82,32 +82,13 @@ df_user.rename(columns={'TotalPay': 'Monetary'}, inplace=True)
 
 ```php
 
-# Quartile for R_score
-r1, r2, r3, r4 = df_user['Recency'].quantile([0.2, 0.4, 0.6, 0.8])
-df_user['R_score'] = df_user['Recency'].apply(lambda x: 5 if x < r1
-                                                               else 4 if (r1 <= x) & (x < r2)
-                                                               else 3 if (r2 <= x) & (x < r3)
-                                                               else 2 if (r3 <= x) & (x < r4)
-                                                               else 1)
+# Calculate quintiles for each RFM metric
+df_user['R_Score'] = pd.qcut(df_user['Recency'], q=5, labels=[5,4,3,2,1])
+df_user['F_Score'] = pd.qcut(df_user['Frequency'], q=5, labels= [1,2,3,4,5])
+df_user['M_Score'] = pd.qcut(df_user['Monetary'], q=5, labels= [1,2,3,4,5])
 
-# Quartile for F_score
-f1, f2, f3, f4 = df_user['Frequency'].quantile([0.2, 0.4, 0.6, 0.8])
-df_user['F_score'] = df_user['Frequency'].apply(lambda x: 1 if x < f1
-                                                               else 2 if (f1 <= x) & (x < f2)
-                                                               else 3 if (f2 <= x) & (x < f3)
-                                                               else 4 if (f3 <= x) & (x < f4)
-                                                               else 5)
-
-# Quartile for M_score
-m1, m2, m3, m4 = df_user['Monetary'].quantile([0.2, 0.4, 0.6, 0.8])
-df_user['M_score'] = df_user['Monetary'].apply(lambda x: 1 if x < m1
-                                                               else 2 if (m1 <= x) & (x < m2)
-                                                               else 3 if (m2 <= x) & (x < m3)
-                                                               else 4 if (m3 <= x) & (x < m4)
-                                                               else 5)
-
-# Create RFM_score
-df_user['RFM_score'] = df_user['R_score'].astype(str) + df_user['F_score'].astype(str) + df_user['M_score'].astype(str)
+# Combine RFM scores into a single RFM_Score
+df_user['RFM_Score'] = df_user['R_Score'].astype(str) + df_user['F_Score'].astype(str) + df_user['M_Score'].astype(str)
 
 ```
 
@@ -148,7 +129,7 @@ df_user['Segment'] = df_user['RFM_score'].map(map_segment)
 
 # **3. Data Visualization**
 
-**RFM Distribution**
+## **RFM Distribution**
 
 ```php
 
@@ -164,9 +145,54 @@ plt.show()
 
 ```
 
-<img src="">
+<img src="https://i.imgur.com/fg4VLZ2.png">
 
-**Segment Distribution**
+**Recency**:
+
+* The peak of the distribution is around 0-100 days, indicating that many customers have made recent purchases within this timeframe.
+* The long tail suggests that there is a segment of customers who have not purchased for a longer period. These customers might be at risk of churn.
+
+**Frequency**:
+
+* The peak of the distribution is around 0-250 purchases, indicating that most customers make a few purchases.
+* The long tail suggests that there is a segment of high-value customers who make frequent purchases. These customers could be valuable for loyalty programs and personalized offers.
+
+**Monetary**:
+
+* The peak of the distribution is around 0-5000, indicating that most customers make smaller purchases.
+* The long tail suggests that there is a segment of high-spending customers who make larger purchases. These customers could be targeted for premium products or exclusive offers.
+
+```php
+
+fig, ax = plt.subplots(figsize=(15,5), ncols=3)
+sns.scatterplot(df_user, x='Recency', y='Frequency', ax=ax[0])
+sns.scatterplot(df_user, x='Recency', y='Monetary', ax=ax[1])
+sns.scatterplot(df_user, x='Frequency', y='Monetary', ax=ax[2])
+ax[0].set_title('Recency vs Frequency')
+ax[1].set_title('Recency vs Monetary')
+ax[2].set_title('Frequency vs Monetary')
+plt.show()
+
+```
+
+<img src="https://i.imgur.com/0HpBTcL.png">
+
+**Recency vs. Frequency**:
+
+* The majority of customers who have made recent purchases (lower Recency values) tend to have lower purchase frequencies.
+* A few customers with higher Recency values (longer time since last purchase) also have high purchase frequencies, suggesting that they might be occasional high-value customers.
+
+**Recency vs. Monetary**:
+
+* The majority of customers who have made recent purchases (lower Recency values) tend to have lower average purchase amounts.
+* A few customers with higher Recency values (longer time since last purchase) also have high average purchase amounts, suggesting that they might be occasional high-spending customers.
+
+**Frequency vs. Monetary**:
+
+* The majority of customers with lower purchase frequencies tend to have lower average purchase amounts.
+* As purchase frequency increases, the average purchase amount also tends to increase, indicating a _positive relationship_ between the two.
+
+## **Segment Distribution**
 
 ```php
 
@@ -186,6 +212,20 @@ plt.show()
 
 ```
 
-<img src="">
+<img src="https://i.imgur.com/7VFaiNG.png">
 
 # **4. Recommendations**
+
+|Segment | Characteristics| Recommendations|
+|--|--|--|
+|Hibernating Customers | Haven't made a purchase recently but have a history of activity| Focus on reactivation strategies to re-engage these customers|
+|Champions | High purchase frequency and spend, and it's crucial to retain them| Implement loyalty programs, personalized offers, and excellent customer service to keep them satisfied.
+|At Risk | Risk of churning. They may have decreased purchase frequency or spend| Implement targeted marketing campaigns, personalized offers, or customer support to retain these customers|
+|Potential Loyalists | Have a history of purchases but haven't reached the level of Champions yet| Focus on increasing their engagement and loyalty through loyalty programs, personalized recommendations, and special offers|
+|Loyal Customers | Make regular purchases| Personalized offers, exclusive access to new products, or early access to sales|
+|Lost Customers | Haven't made a purchase for a long time| Analyze the reasons for their inactivity and implement targeted win-back campaigns.|
+|New Customers | Recently made their first purchase| Providing a positive customer experience to encourage repeat purchases|
+|Need Attention | Further analysis to understand their behavior and needs| Segment them further based on other factors like purchase history or demographics|
+|About To Sleep | Similar to At Risk, but they may be further along the path to churn| Motivate them to make another purchase by offering discounts|
+|Promising | Made a few purchases and have the potential to become loyal customers| Implement targeted marketing campaigns to encourage repeat purchases|
+|Cannot Lose Them | Small but crucial group of high-value customers| Prioritize their retention and satisfaction with personalized offers, exclusive benefits, and exceptional customer service|
