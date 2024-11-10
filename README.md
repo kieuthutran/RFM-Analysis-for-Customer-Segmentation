@@ -123,7 +123,8 @@ def map_segment(score):
     return segment
 
 # Apply the segmentation function to create 'Segment' column
-df_user['Segment'] = df_user['RFM_score'].map(map_segment)
+df_user['RFM_Score'] = df_user['RFM_Score'].astype(int)
+df_user['Segment'] = df_user['RFM_Score'].map(map_segment)
 
 ```
 
@@ -145,7 +146,7 @@ plt.show()
 
 ```
 
-<img src="https://i.imgur.com/fg4VLZ2.png">
+<img src="https://i.imgur.com/bRoiQzl.png">
 
 **Recency**:
 
@@ -175,7 +176,7 @@ plt.show()
 
 ```
 
-<img src="https://i.imgur.com/0HpBTcL.png">
+<img src="https://i.imgur.com/tbAlXEq.png">
 
 **Recency vs. Frequency**:
 
@@ -212,18 +213,18 @@ plt.show()
 
 ```
 
-<img src="https://i.imgur.com/7VFaiNG.png">
+<img src="https://i.imgur.com/sIh1QJ2.png">
 
 # **4. Recommendations**
 
 |Segment | Characteristics| Recommendations|
 |--|--|--|
 |Hibernating Customers | Haven't made a purchase recently but have a history of activity| Focus on reactivation strategies to re-engage these customers|
-|Champions | High purchase frequency and spend, and it's crucial to retain them| Implement loyalty programs, personalized offers, and excellent customer service to keep them satisfied.
-|At Risk | Risk of churning. They may have decreased purchase frequency or spend| Implement targeted marketing campaigns, personalized offers, or customer support to retain these customers|
+|Champions | High purchase frequency and spend, and it's crucial to retain them| Implement loyalty programs, personalized offers, and excellent customer service to keep them satisfied|
 |Potential Loyalists | Have a history of purchases but haven't reached the level of Champions yet| Focus on increasing their engagement and loyalty through loyalty programs, personalized recommendations, and special offers|
+|Lost Customers | Haven't made a purchase for a long time| Analyze the reasons for their inactivity and implement targeted win-back campaigns|
+|At Risk | Risk of churning. They may have decreased purchase frequency or spend| Implement targeted marketing campaigns, personalized offers, or customer support to retain these customers|
 |Loyal Customers | Make regular purchases| Personalized offers, exclusive access to new products, or early access to sales|
-|Lost Customers | Haven't made a purchase for a long time| Analyze the reasons for their inactivity and implement targeted win-back campaigns.|
 |New Customers | Recently made their first purchase| Providing a positive customer experience to encourage repeat purchases|
 |Need Attention | Further analysis to understand their behavior and needs| Segment them further based on other factors like purchase history or demographics|
 |About To Sleep | Similar to At Risk, but they may be further along the path to churn| Motivate them to make another purchase by offering discounts|
